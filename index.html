@@ -18,14 +18,27 @@
         chat.innerHTML += `<p><strong>あなた：</strong> ${userMessage}</p>`;
         input.value = "";
 
-        const res = await fetch("/.netlify/functions/chatgpt", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: userMessage })
-        });
+        try {
+          const res = await fetch("/.netlify/functions/chatgpt", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: userMessage })
+          });
 
-        const data = await res.json();
-        chat.innerHTML += `<p><strong>AI：</strong> ${data.reply}</p>`;
+          const data = await res.json();
+
+          // 応答が取得できているか確認
+          if (data.reply) {
+            chat.innerHTML += `<p><strong>AI：</strong> ${data.reply}</p>`;
+          } else {
+            chat.innerHTML += `<p><strong>AI：</strong> 返答が取得できませんでした。</p>`;
+            console.warn("⚠️ 返答なし", data);
+          }
+
+        } catch (error) {
+          chat.innerHTML += `<p><strong>AI：</strong> エラーが発生しました。</p>`;
+          console.error("🔥 通信エラー:", error);
+        }
       }
     });
   </script>
